@@ -8,13 +8,14 @@ import glob
 import os
 
 from dotenv import load_dotenv
+load_dotenv()
 
 storage_bucket = os.getenv("FIREBASE_STORAGE_BUCKET")
+
 
 LOCAL_EPIC_USERNAME = "BrickBoned"
 
 SCRIPT_PATH = "C:\\Users\\harri\\Desktop\\StatPuller-Build-Match-Summary\\"
-load_dotenv(SCRIPT_PATH + ".env")
 
 firebase_cert = SCRIPT_PATH + "fb-key.json"
 parser = SCRIPT_PATH + "parser\\RocketLeagueReplayParser.exe"
