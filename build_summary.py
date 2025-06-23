@@ -2,6 +2,8 @@ import json
 import firebase_admin
 from firebase_admin import credentials, firestore, storage
 
+from b2sdk.v2 import InMemoryAccountInfo, B2Api
+
 import subprocess
 
 import glob
@@ -10,8 +12,11 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-storage_bucket = os.getenv("FIREBASE_STORAGE_BUCKET")
+STORAGE_BUCKET = os.getenv("FIREBASE_STORAGE_BUCKET")
 
+B2_KEY_ID = os.getenv("B2_KEY_ID")
+B2_APPLICATION_KEY = os.getenv("B2_APPLICATION_KEY")
+B2_BUCKET_NAME = os.getenv("B2_BUCKET_NAME")
 
 LOCAL_EPIC_USERNAME = "BrickBoned"
 
@@ -23,13 +28,19 @@ last_match_stats = SCRIPT_PATH + "last-match-stats.json"
 CLIPS_PATH = SCRIPT_PATH + "clips\\"
 
 
-def main():  
-    cred = credentials.Certificate(firebase_cert)
-    firebase_admin.initialize_app(cred, {
-    "storageBucket": storage_bucket
-    })
-    db = firestore.client()
+info = InMemoryAccountInfo()
+b2_api = B2Api(info)
+b2_api.authorize_account("production", B2_KEY_ID, B2_APPLICATION_KEY)
+b2_bucket = b2_api.get_bucket_by_name(B2_BUCKET_NAME)
 
+
+cred = credentials.Certificate(firebase_cert)
+firebase_admin.initialize_app(cred, {
+"storageBucket": STORAGE_BUCKET
+})
+db = firestore.client()
+
+def main():
     latest_replay_file = SCRIPT_PATH + "last-match-replay.replay"
     data = parse_replay_to_json(latest_replay_file)
 
@@ -45,8 +56,8 @@ def main():
     for goal in match_stats[start_epoch]["Goals"]:
         if goal["ScorerName"] == LOCAL_EPIC_USERNAME:
             local_clip_path = clip_files[local_player_goal_index]
-            remote_clip_path = f"goal_clips/{start_epoch}/goal_{local_player_goal_index + 1}"
-            goal["GoalClip"] = upload_clip_and_get_url(local_clip_path, remote_clip_path)
+            remote_clip_path = f"{start_epoch}/goal_{local_player_goal_index + 1}"
+            goal["GoalClip"] = upload_clip_and_get_path(local_clip_path, remote_clip_path)
             
             os.remove(local_clip_path)
 
@@ -81,7 +92,7 @@ def set_match_stats(match_json):
         bool_forfeit = match_json["Properties"]["bForfeit"]
 
     match_data[start_epoch] = {
-        "FormatVersion": data["Version"],
+        "FormatVersion": "6.0",
         "Team0Score": match_json["Properties"]["Team0Score"],
         "Team1Score": match_json["Properties"]["Team1Score"],
         "StartEpoch": start_epoch,
@@ -120,17 +131,21 @@ def assign_scorers_to_goals(all_goals, match_json):
     # copy goal scorer name from replay file
     for i, goal in enumerate(all_goals):
         goal["ScorerName"] = match_json["Properties"]["Goals"][i]["PlayerName"]
-
     return all_goals
 
-def upload_clip_and_get_url(local_path, remote_path):
-    bucket = storage.bucket()
-    blob = bucket.blob(remote_path)
-    blob.upload_from_filename(local_path)
-    return blob.public_url
+def upload_clip_and_get_path(local_path, remote_path):
+    file_name = f"{remote_path}.mp4"
+    with open(local_path, "rb") as file:
+        b2_bucket.upload_bytes(file.read(), file_name)
+    return file_name
 
 def upload_match(match_data, db):
     for match_id, match_info in match_data.items():
-        db.collection("matches").document(str(match_id)).set(match_info)
+        date = match_info["StartDate"].split(" ")[0]
+        db.collection("matches") \
+            .document("by_date") \
+            .collection(date) \
+            .document(str(match_id)) \
+            .set(match_info)
 
 main()
