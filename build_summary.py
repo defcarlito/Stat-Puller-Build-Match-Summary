@@ -32,6 +32,7 @@ def main():
 
     latest_replay_file = SCRIPT_PATH + "last-match-replay.replay"
     data = parse_replay_to_json(latest_replay_file)
+
     match_stats = set_match_stats(data)
     start_epoch = data["Properties"]["MatchStartEpoch"]
 
@@ -72,7 +73,7 @@ def set_match_stats(match_json):
     
     start_epoch = match_json["Properties"]["MatchStartEpoch"]
 
-    goals = assign_clips_and_scorer_to_goals(goalsUnassigned, match_json)
+    goals = assign_scorers_to_goals(goalsUnassigned, match_json)
     
     match_data = {}
     bool_forfeit = "0"
@@ -115,7 +116,7 @@ def set_match_stats(match_json):
 
     return match_data
 
-def assign_clips_and_scorer_to_goals(all_goals, match_json):
+def assign_scorers_to_goals(all_goals, match_json):
     # copy goal scorer name from replay file
     for i, goal in enumerate(all_goals):
         goal["ScorerName"] = match_json["Properties"]["Goals"][i]["PlayerName"]
