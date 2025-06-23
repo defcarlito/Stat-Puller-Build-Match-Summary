@@ -1,6 +1,6 @@
 import json
 import firebase_admin
-from firebase_admin import credentials, firestore, storage
+from firebase_admin import credentials, firestore
 
 from b2sdk.v2 import InMemoryAccountInfo, B2Api
 
