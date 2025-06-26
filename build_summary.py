@@ -90,13 +90,28 @@ def set_match_stats(match_json):
     bool_forfeit = "0"
     if "bForfeit" in match_json["Properties"]:
         bool_forfeit = match_json["Properties"]["bForfeit"]
+    
+    if "Team0Score" in match_json["Properties"]:
+        team_0_score = match_json["Properties"]["Team0Score"]
+    else:
+        team_0_score = 0
+
+    if "Team1Score" in match_json["Properties"]:
+        team_1_score = match_json["Properties"]["Team0Score"]
+    else:
+        team_1_score = 0
+
+    date_hours = match_json["Properties"]["Date"]
+    date = date_hours.split(" ")[0]
+    hour = date_hours.split(" ")[1]
 
     match_data[start_epoch] = {
-        "FormatVersion": "6.0",
-        "Team0Score": match_json["Properties"]["Team0Score"],
-        "Team1Score": match_json["Properties"]["Team1Score"],
+        "FormatVersion": "7.0",
+        "Team0Score": team_0_score,
+        "Team1Score": team_1_score,
         "StartEpoch": start_epoch,
-        "StartDate": match_json["Properties"]["Date"],
+        "StartDate": date,
+        "StartTime": hour,
         "LocalMMRBefore": data["MMR_Before"],
         "LocalMMRAfter": data["MMR_After"],
         "MatchPlayerInfo": [],
@@ -117,11 +132,12 @@ def set_match_stats(match_json):
         }
         match_data[start_epoch]["MatchPlayerInfo"].append(player_info)
 
-        if player["PlayerID"][2]["EpicAccountId"]:
+        if "EpicAccountId" in player["PlayerID"][2]:
             player_info["EpicAccountId"] = player["PlayerID"][2]["EpicAccountId"]
-        if player["OnlineID"]:
+        if "OnlineID" in player:
             player_info["OnlineID"] = player["OnlineID"]
-        if player["PlayerID"][3]["Platform"]["Value"]:
+
+        if "Value" in player["PlayerID"][3]["Platform"]:
             player_info["Platform"] = player["PlayerID"][3]["Platform"]["Value"]
 
 
@@ -141,11 +157,13 @@ def upload_clip_and_get_path(local_path, remote_path):
 
 def upload_match(match_data, db):
     for match_id, match_info in match_data.items():
-        date = match_info["StartDate"].split(" ")[0]
+        date = match_info["StartDate"]
+
         db.collection("matches") \
-            .document("by_date") \
-            .collection(date) \
             .document(str(match_id)) \
             .set(match_info)
-
+        
+        db.collection("match_dates") \
+            .document(date) \
+            .set({})
 main()
