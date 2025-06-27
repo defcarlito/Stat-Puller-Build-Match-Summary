@@ -97,7 +97,7 @@ def set_match_stats(match_json):
         team_0_score = 0
 
     if "Team1Score" in match_json["Properties"]:
-        team_1_score = match_json["Properties"]["Team0Score"]
+        team_1_score = match_json["Properties"]["Team1Score"]
     else:
         team_1_score = 0
 
