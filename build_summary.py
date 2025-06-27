@@ -106,7 +106,7 @@ def set_match_stats(match_json):
     hour = date_hours.split(" ")[1]
 
     match_data[start_epoch] = {
-        "FormatVersion": "7.0",
+        "FormatVersion": "7.1",
         "Team0Score": team_0_score,
         "Team1Score": team_1_score,
         "StartEpoch": start_epoch,
@@ -132,9 +132,9 @@ def set_match_stats(match_json):
         }
         match_data[start_epoch]["MatchPlayerInfo"].append(player_info)
 
-        if "EpicAccountId" in player["PlayerID"][2]:
+        if player["PlayerID"][2]["EpicAccountId"]:
             player_info["EpicAccountId"] = player["PlayerID"][2]["EpicAccountId"]
-        if "OnlineID" in player:
+        if player["OnlineID"]:
             player_info["OnlineID"] = player["OnlineID"]
 
         if "Value" in player["PlayerID"][3]["Platform"]:
