@@ -166,4 +166,14 @@ def upload_match(match_data, db):
         db.collection("match_dates") \
             .document(date) \
             .set({})
+
+        db.collection("latest_stats_by_playlist") \
+            .document(str(match_info["Playlist"])) \
+            .set({
+                "CurrentMMR": match_info["LocalMMRAfter"],
+                "LastPlayedDate": match_info["StartDate"],
+                "LastPlayedTime": match_info["StartTime"],
+                "LatestMatchId": match_info["StartEpoch"]
+            })
+
 main()
