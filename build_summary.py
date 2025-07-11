@@ -53,15 +53,16 @@ def main():
 
     # upload clips for each of the local player's goals
     local_player_goal_index = 0 # used to match local player goal to its .mp4 clip
-    for goal in match_stats[start_epoch]["Goals"]:
-        if goal["ScorerName"] == LOCAL_EPIC_USERNAME:
-            local_clip_path = clip_files[local_player_goal_index]
-            remote_clip_path = f"{start_epoch}/goal_{local_player_goal_index + 1}"
-            goal["GoalClip"] = upload_clip_and_get_path(local_clip_path, remote_clip_path)
-            
-            os.remove(local_clip_path)
+    if len(clip_files) > 0:
+        for goal in match_stats[start_epoch]["Goals"]:
+            if goal["ScorerName"] == LOCAL_EPIC_USERNAME:
+                local_clip_path = clip_files[local_player_goal_index]
+                remote_clip_path = f"{start_epoch}/goal_{local_player_goal_index + 1}"
+                goal["GoalClip"] = upload_clip_and_get_path(local_clip_path, remote_clip_path)
+                
+                os.remove(local_clip_path)
 
-            local_player_goal_index +=1
+                local_player_goal_index +=1
 
     upload_match(match_stats, db)
 
@@ -106,7 +107,7 @@ def set_match_stats(match_json):
     hour = date_hours.split(" ")[1]
 
     match_data[start_epoch] = {
-        "FormatVersion": "7.1",
+        "FormatVersion": "7.2",
         "Team0Score": team_0_score,
         "Team1Score": team_1_score,
         "StartEpoch": start_epoch,
