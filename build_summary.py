@@ -46,6 +46,7 @@ def main():
 
     match_stats = set_match_stats(data)
     start_epoch = data["Properties"]["MatchStartEpoch"]
+    match_stats[start_epoch]["hasClips"] = False
 
     # grab all replays from local path
     clip_files = glob.glob(os.path.join(CLIPS_PATH, "*.mp4"))
@@ -54,6 +55,7 @@ def main():
     # upload clips for each of the local player's goals
     local_player_goal_index = 0 # used to match local player goal to its .mp4 clip
     if len(clip_files) > 0:
+        match_stats[start_epoch]["hasClips"] = True
         for goal in match_stats[start_epoch]["Goals"]:
             if goal["ScorerName"] == LOCAL_EPIC_USERNAME:
                 local_clip_path = clip_files[local_player_goal_index]
@@ -107,7 +109,7 @@ def set_match_stats(match_json):
     hour = date_hours.split(" ")[1]
 
     match_data[start_epoch] = {
-        "FormatVersion": "7.2",
+        "FormatVersion": "8.0",
         "Team0Score": team_0_score,
         "Team1Score": team_1_score,
         "StartEpoch": start_epoch,
