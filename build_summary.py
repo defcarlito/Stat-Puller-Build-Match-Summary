@@ -23,7 +23,7 @@ LOCAL_EPIC_USERNAME = "BrickBoned"
 SCRIPT_PATH = "C:\\Users\\harri\\Desktop\\StatPuller-Build-Match-Summary\\"
 
 firebase_cert = SCRIPT_PATH + "fb-key.json"
-parser = SCRIPT_PATH + "parser\\RocketLeagueReplayParser.exe"
+parser = SCRIPT_PATH + "parser\\RocketLeagueReplayParser.Console.exe"
 last_match_stats = SCRIPT_PATH + "last-match-stats.json"
 CLIPS_PATH = SCRIPT_PATH + "clips\\"
 
